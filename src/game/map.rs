@@ -10,32 +10,18 @@ pub struct Map {
 impl Map {
     pub async fn new() -> Self {
         let mut chunks = HashMap::new();
-        let r = 20;
+        let r = 1000 / 16 + 1;
         for chunk_x in -r..r {
             for chunk_z in -r..r {
-                let mut chunk = Chunk::new(chunk_x, chunk_z);
-                for z in 0..16 {
-                    for x in 0..16 {
-                        if (z + x) % 2 == 0 {
-                            chunk.set_block(x, 4, z, Block::WhiteConcrete);
-                        } else {
-                            chunk.set_block(x, 4, z, Block::BlackConcrete);
-                        }
-                        // if z % 4 < 2 && x % 4 < 2 || z % 4 >= 2 && x % 4 >= 2 {
-                        //     chunk.set_block(x, 4, z, Block::SlimeBlock);
-                        // } else {
-                        //     chunk.set_block(x, 4, z, Block::WhiteConcrete);
-                        // }
-                    }
-                }
+                let chunk = Chunk::new(chunk_x, chunk_z);
                 chunks.insert((chunk_x, chunk_z), Lock::new(chunk));
             }
         }
-        let map = Self {
+        let mut map = Self {
             chunks: Lock::new(chunks)
         };
-        map.set_block(-1, 4, 0, Block::RedConcrete).await;
-        map.set_block(0, 4, -1, Block::RedConcrete).await;
+
+        crate::mandel::compute(-0.909, -0.275, &mut map).await;
 
         map
     }
